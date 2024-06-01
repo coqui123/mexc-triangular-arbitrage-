@@ -9,7 +9,7 @@ from mexc_sdk import Spot
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Constants for MEXC
-MEXC_API_KEY =
+MEXC_API_KEY = 
 MEXC_SECRET_KEY =
 MEXC_BASE_URL = 'https://api.mexc.com'
 
@@ -55,14 +55,14 @@ def get_mexc_price(symbol):
         logging.error(f"Error fetching price from MEXC: {response.status_code} - {response.text}")
         return None
 
-# Function to place a market order on MEXC
-def place_market_order(symbol, side, quantity):
+# Function to place a limit order on MEXC
+def place_limit_order(symbol, side, quantity, price):
     try:
-        order = client.new_order(symbol=symbol, side=side, order_type='MARKET', options={'quantity': quantity})
-        logging.info(f"Market order placed: {order}")
+        order = client.new_order(symbol=symbol, side=side, order_type='LIMIT', options={'quantity': quantity, 'price': price, 'timeInForce': 'GTC'})
+        logging.info(f"Limit order placed: {order}")
         return order
     except Exception as e:
-        logging.error(f"Error placing market order: {e}")
+        logging.error(f"Error placing limit order: {e}")
         return None
 
 # Function to execute triangular arbitrage on MEXC
@@ -74,8 +74,7 @@ def execute_triangular_arbitrage():
 
     if btc_usdt_price and eth_usdt_price and eth_btc_price:
         # Calculate potential arbitrage profit
-        #work on adding range kinda like the atr
-        initial_usd = 178  # Example initial amount in USD
+        initial_usd = 1500  # Example initial amount in USD
         btc_amount = initial_usd / btc_usdt_price
         eth_amount = btc_amount / eth_btc_price
         final_usd = eth_amount * eth_usdt_price
@@ -89,10 +88,10 @@ def execute_triangular_arbitrage():
 
         if net_profit > 0:
             logging.info("Arbitrage opportunity found! Executing trades...")
-            # Execute trades
-            place_market_order('BTCUSDT', 'BUY', initial_usd / btc_usdt_price)
-            place_market_order('ETHBTC', 'BUY', btc_amount / eth_btc_price)
-            place_market_order('ETHUSDT', 'SELL', eth_amount)
+            # Execute trades with limit orders
+            place_limit_order('BTCUSDT', 'BUY', initial_usd / btc_usdt_price, btc_usdt_price)
+            place_limit_order('ETHBTC', 'BUY', btc_amount / eth_btc_price, eth_btc_price)
+            place_limit_order('ETHUSDT', 'SELL', eth_amount, eth_usdt_price)
         else:
             logging.info("No arbitrage opportunity found.")
 
@@ -108,7 +107,7 @@ def main():
     while True:
         # Execute triangular arbitrage
         execute_triangular_arbitrage()
-        time.sleep(15)
+        time.sleep(10)
 
 if __name__ == "__main__":
     main()
