@@ -10,6 +10,7 @@ Executes triangular arbitrage strategy.
 
 Prerequisites:
 Python 3.x
+
 MEXC Exchange account with API access
 
 
